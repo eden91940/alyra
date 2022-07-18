@@ -13,8 +13,7 @@ const client = createClient({
 })
 
 function App() {
-
-
+    
     return (
         <div id="App">
             <div className="container">
