@@ -5,8 +5,16 @@ import {Button, Chip, Grid, TextField, Typography} from "@mui/material";
 import {useVotingContract} from "../contexts/UseVotingContract";
 import MUIDataTable from "mui-datatables";
 import Voter from "./Voter";
+import {makeStyles} from "@mui/styles";
 
-function Admin() {
+export const useStyles = makeStyles(() => ({
+    chipCustom: {
+        borderRadius: '9px', //some style
+        '& .MuiChip-label': {fontSize: 14}, // sub-selector
+    },
+}));
+
+function Voting() {
 
     const WorkflowStatus = {
         RegisteringVoters: 0,
@@ -17,7 +25,10 @@ function Admin() {
         VotesTallied: 5
     }
 
+
+    const chipCustomClass = useStyles();
     const [isOwner, setIsOwner] = useState(false)
+    const [winningId, setWinningId] = useState()
     const [workFlowChanging, setWorkFlowChanging] = useState(false)
     const [voter, setVoter] = useState(null)
     const [votersList, setVotersList] = useState([])
@@ -48,9 +59,9 @@ function Admin() {
             const workflowStatus = await contractProvider.workflowStatus();
             setWorkflowStatus(workflowStatus)
             setLabelWorkflowStatus(getLabelVoteStatus(workflowStatus))
-            setLabelNextWorkflowStatus(getLabelVoteStatus(workflowStatus + 1))
+            setLabelNextWorkflowStatus(getLabelVoteAction(workflowStatus))
             setWorkFlowChanging(false);
-        },
+        }
     })
 
 
@@ -66,8 +77,7 @@ function Admin() {
                     const ownerAddress = await contractProvider.owner();
                     setIsOwner(ownerAddress === address)
 
-
-                    //on vérifie si on est propriétaire
+                    //on vérifie si on est un électeur
                     await contractSigner.getVoter(address).then((voter) => {
                         setVoter(voter)
                     }).catch(function (e) {
@@ -78,7 +88,12 @@ function Admin() {
                     const workflowStatus = await contractProvider.workflowStatus();
                     setWorkflowStatus(workflowStatus)
                     setLabelWorkflowStatus(getLabelVoteStatus(workflowStatus))
-                    setLabelNextWorkflowStatus(getLabelVoteStatus(workflowStatus + 1))
+                    setLabelNextWorkflowStatus(getLabelVoteAction(workflowStatus))
+
+                    if (workflowStatus == 5) {
+                        const winningId = await contractProvider.winningProposalID();
+                        setWinningId(winningId.toNumber());
+                    }
 
 
                     // on récupère tous les votants enregistrés via l'event VoterRegistered
@@ -99,7 +114,7 @@ function Admin() {
             setUpWeb3();
 
         },
-        [address, contractProvider]
+        [address, contractProvider, contractSigner]
     );
 
     const addVoters = () => {
@@ -118,7 +133,7 @@ function Admin() {
         }
 
     };
-    
+
 
     function getLabelVoteStatus(workflowStatus) {
         switch (workflowStatus) {
@@ -133,7 +148,24 @@ function Admin() {
             case WorkflowStatus.VotingSessionEnded:
                 return "Vote terminé";
             case WorkflowStatus.VotesTallied:
-                return "Dépouillement lancé";
+                return "Dépouillement effectué";
+            default:
+                return "en attente des infos du contrat";
+        }
+    }
+
+    function getLabelVoteAction(workflowStatus) {
+        switch (workflowStatus) {
+            case WorkflowStatus.RegisteringVoters:
+                return "Enregistrer les propositions";
+            case WorkflowStatus.ProposalsRegistrationStarted:
+                return "Terminer l'enregistrement des propositions";
+            case WorkflowStatus.ProposalsRegistrationEnded:
+                return "Démarrer le vote";
+            case WorkflowStatus.VotingSessionStarted:
+                return "Mettre fin au vote";
+            case WorkflowStatus.VotingSessionEnded:
+                return "Lancer le dépouillement";
             default:
                 return "en attente des infos du contrat";
         }
@@ -199,7 +231,8 @@ function Admin() {
                                 <Grid container spacing={5}>
                                     <Grid item xs={12}>
                                         <Typography variant="h5" gutterBottom>
-                                            Vous êtes <strong>propriétaire du contrat</strong> et la session est à <Chip size="medium" color={"primary"}
+                                            Vous êtes <strong>propriétaire du contrat</strong> et la session est à <Chip className={chipCustomClass.chipCustom} size="medium"
+                                                                                                                         color={"primary"}
                                                                                                                          label={labelWorkflowStatus}/>
 
                                         </Typography>
@@ -241,19 +274,24 @@ function Admin() {
                                             }}
                                         />
                                     </Grid>
+                                    <Grid item xs={12} hidden={workflowStatus != 5}>
+                                        Le vote est clos et la proposition gagnante est la <strong>{winningId}</strong>
+                                    </Grid>
                                 </Grid>
                                 <hr/>
-                                {voter && voter.isRegistered && <Voter workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus}/>
+                                {voter && voter.isRegistered &&
+                                    <Voter voter={voter} workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus} winningId={winningId}/>
                                 }
                             </React.Fragment>
                         )
-                    } else if (voter && voter.isRegistered) {
+                    } else if (address && voter && voter.isRegistered) {
                         return (
-                            <Voter workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus}/>
+                            <Voter voter={voter} workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus} winningId={winningId}/>
                         )
-                    } else {
+                    } else if (address) {
                         return <div>Vous n'êtes pas enregistré sur le projet Voting</div>;
-
+                    } else {
+                        return <div>Veuillez vous connecter</div>;
                     }
                 })()
             }
@@ -261,4 +299,4 @@ function Admin() {
     )
 }
 
-export default Admin;
+export default Voting;

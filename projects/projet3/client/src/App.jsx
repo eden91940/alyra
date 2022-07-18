@@ -4,7 +4,7 @@ import Footer from "./components/Footer";
 import "./App.css";
 import {createClient, WagmiConfig} from 'wagmi'
 import {ethers} from 'ethers'
-import Admin from "./components/Admin";
+import Voting from "./components/Voting";
 
 
 const client = createClient({
@@ -13,7 +13,7 @@ const client = createClient({
 })
 
 function App() {
-    
+
     return (
         <div id="App">
             <div className="container">
@@ -22,7 +22,7 @@ function App() {
                     <hr/>
                     <Profile/>
                     <hr/>
-                    <Admin/>
+                    <Voting/>
                     <hr/>
                     <Footer/>
                 </WagmiConfig>

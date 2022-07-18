@@ -8,7 +8,7 @@ export function useVotingContract() {
     //const signer = useSigner();
 
     const config = {
-        addressOrName: '0x47f1B920F2aC91618fEf35a20e1A95E107385Faf',
+        addressOrName: '0x6BD7B7ace3f24BA33785113361DF0Fd1EA3F7dEA',
         contractInterface: VotingABI,
     };
     const contractProvider = useContract({
@@ -25,7 +25,7 @@ export function useVotingContract() {
         ...config,
         functionName: 'addVoter',
     });
-    
+
 
     return {contractConfig: config, addVoter, contractProvider, contractSigner};
 
