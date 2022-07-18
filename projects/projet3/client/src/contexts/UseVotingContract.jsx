@@ -8,9 +8,10 @@ export function useVotingContract() {
     //const signer = useSigner();
 
     const config = {
-        addressOrName: '0x0B54f39C7eB926faA2B8bc2d559BF1041F61C540',
+        addressOrName: '0x9C53F90f56243871f95a4c9eC8a2bEE530FF4424',
         contractInterface: VotingABI,
     };
+    
     const contractProvider = useContract({
         ...config,
         signerOrProvider: provider,
