@@ -1,4 +1,4 @@
-import {useAccount, useContractEvent} from 'wagmi'
+import {useAccount, useContractEvent, useContractWrite} from 'wagmi'
 import * as React from "react";
 import {useEffect, useState} from "react";
 import {Button, Chip, Grid, TextField, Typography} from "@mui/material";
@@ -37,18 +37,34 @@ function Voting() {
     const [labelNextWorkflowStatus, setLabelNextWorkflowStatus] = useState(null)
     const [voterAddress, setVoterAddress] = useState(null)
     const {address} = useAccount()
-    const {contractConfig: config, addVoter, contractProvider, contractSigner} = useVotingContract()
+    const {contractConfig: config, contractProvider, contractSigner} = useVotingContract()
     const columns = ["Adresse"];
+
+    const addVoter = useContractWrite({
+        ...config,
+        functionName: 'addVoter',
+        onError(error) {
+            console.log("Error", error);
+        },
+        onSuccess(data) {
+            console.log("Success", data);
+        }
+    });
 
     // Permet d'écouter un event d'enregistrement d'un voter pour mettre à jour le tableau
     useContractEvent({
         ...config,
         eventName: 'VoterRegistered',
         listener: (event) => {
-            console.log(event)
-            console.log(votersList)
             // 👇️ push to end of state array
             setVotersList(current => [...current, event.slice(0, event.length - 1)]);
+            //on vérifie si on est un électeur
+            contractSigner.getVoter(address).then((voter) => {
+                setVoter(voter)
+            }).catch(function (e) {
+                setVoter(null)
+                console.warn("Vous ne pouvez pas voter - ", e);
+            })
         },
     })
 
@@ -78,22 +94,20 @@ function Voting() {
                     setIsOwner(ownerAddress === address)
 
                     //on vérifie si on est un électeur
-                    await contractSigner.getVoter(address).then((voter) => {
-                        setVoter(voter)
-                    }).catch(function (e) {
-                        console.error("Vous ne pouvez pas voter");
-                    })
+                    if (address) {
+                        contractSigner.getVoter(address).then((voter) => {
+                            setVoter(voter)
+                        }).catch(function (e) {
+                            setVoter(null)
+                            console.warn("Vous ne pouvez pas voter - ", e);
+                        });
+                    }
 
                     //on récupère le status du workflow
                     const workflowStatus = await contractProvider.workflowStatus();
                     setWorkflowStatus(workflowStatus)
                     setLabelWorkflowStatus(getLabelVoteStatus(workflowStatus))
                     setLabelNextWorkflowStatus(getLabelVoteAction(workflowStatus))
-
-                    if (workflowStatus == 5) {
-                        const winningId = await contractProvider.winningProposalID();
-                        setWinningId(winningId.toNumber());
-                    }
 
 
                     // on récupère tous les votants enregistrés via l'event VoterRegistered
@@ -114,21 +128,25 @@ function Voting() {
             setUpWeb3();
 
         },
-        [address, contractProvider, contractSigner]
+        [address, contractProvider]
     );
+
+    useEffect(
+        () => {
+            contractProvider.winningProposalID().then((winningId) => {
+                setWinningId(winningId.toNumber());
+            })
+        },
+        [workflowStatus]
+    );
+
 
     const addVoters = () => {
 
         if (voterAddress) {
             console.log("Ajout adresse : " + voterAddress);
             addVoter.write({
-                args: voterAddress,
-                onError(error) {
-                    console.log("Error", error);
-                },
-                onSuccess(data) {
-                    console.log("Success", data);
-                }
+                args: voterAddress
             });
         }
 
@@ -231,9 +249,9 @@ function Voting() {
                                 <Grid container spacing={5}>
                                     <Grid item xs={12}>
                                         <Typography variant="h5" gutterBottom>
-                                            Vous êtes <strong>propriétaire du contrat</strong> et la session est à <Chip className={chipCustomClass.chipCustom} size="medium"
-                                                                                                                         color={"primary"}
-                                                                                                                         label={labelWorkflowStatus}/>
+                                            Vous êtes <strong>propriétaire du contrat</strong> et la session est au stade <Chip className={chipCustomClass.chipCustom} size="medium"
+                                                                                                                                color={"primary"}
+                                                                                                                                label={labelWorkflowStatus}/>
 
                                         </Typography>
                                     </Grid>
@@ -274,19 +292,19 @@ function Voting() {
                                             }}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} hidden={workflowStatus != 5}>
+                                    <Grid item xs={12} hidden={workflowStatus !== 5}>
                                         Le vote est clos et la proposition gagnante est la <strong>{winningId}</strong>
                                     </Grid>
                                 </Grid>
                                 <hr/>
                                 {voter && voter.isRegistered &&
-                                    <Voter voter={voter} workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus} winningId={winningId}/>
+                                    <Voter voteur={voter} workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus} winningId={winningId}/>
                                 }
                             </React.Fragment>
                         )
                     } else if (address && voter && voter.isRegistered) {
                         return (
-                            <Voter voter={voter} workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus} winningId={winningId}/>
+                            <Voter voteur={voter} workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus} winningId={winningId}/>
                         )
                     } else if (address) {
                         return <div>Vous n'êtes pas enregistré sur le projet Voting</div>;

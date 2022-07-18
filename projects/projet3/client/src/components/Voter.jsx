@@ -3,17 +3,23 @@ import {useEffect, useState} from "react";
 import {Alert, Box, Button, Chip, Collapse, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextareaAutosize, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {useVotingContract} from "../contexts/UseVotingContract";
-import {useContractWrite} from "wagmi";
+import {useAccount, useContractEvent, useContractWrite} from "wagmi";
 import {useStyles} from "./Voting";
+import {BigNumber} from "ethers";
 
-function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
+function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
 
     const chipCustomClass = useStyles();
+    /*
+        const [voter, setVoter] = useState(voteur)
+    */
     const [proposal, setProposal] = useState('')
+    const [voter, setVoter] = useState(voteur)
     const [openDialogOk, setOpenDialogOk] = useState(false)
     const [proposalList, setProposalList] = useState([])
     const [proposalSelected, setProposalSelected] = useState('')
     const {contractConfig, contractProvider, contractSigner} = useVotingContract()
+    const {address} = useAccount()
 
     const addProposal = useContractWrite({
         ...contractConfig,
@@ -40,11 +46,23 @@ function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
         }
     })
 
+    // Permet d'écouter un event d'enregistrement d'un voter pour mettre à jour le tableau
+    useContractEvent({
+        ...contractConfig,
+        eventName: 'Voted',
+        listener: (event) => {
+            // 👇️ push to end of state array
+            contractSigner.getVoter(address).then((voter) => {
+                console.log("update voter")
+                setVoter(voter);
+            }).catch(function (e) {
+                console.warn("Vous ne pouvez pas voter - ", e);
+            })
+        },
+    })
 
     // Rendu initial du composant
     useEffect(
-        // On veut recupérer les infos du contrat déployé au moment du montage du composant
-        // Pour ça on doit déclarer une fonction async dans le hook useEffect
         () => {
             async function getProposals() {
                 try {
@@ -56,9 +74,7 @@ function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
                         const id = args[0].toNumber();
                         const proposal = await contractSigner.getOneProposal(id)
                         setProposalList(current => [...current, {id: id, description: proposal.description}]);
-                        //return [args[0].toNumber()];
                     })
-                    //return new Promise(resolve => proposalIds)
 
                 } catch (error) {
                     alert(`Failed to load web3, accounts, or contract. Check console for details.`,);
@@ -66,11 +82,27 @@ function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
                 }
             }
 
+            setOpenDialogOk(false)
             getProposals();
-            console.log(voter);
+
         },
-        []
+        [address]
     );
+
+    /*    useEffect(
+            () => {
+                if (proposalSelected === '') {
+                    console.log("Refesh data voter")
+                    contractSigner.getVoter(address).then((voter) => {
+                        setVoter(voter)
+                    }).catch(function (e) {
+                        setVoter(null)
+                        console.warn("Vous ne pouvez pas voter - ", e);
+                    })
+                }
+            },
+            [proposalSelected]
+        );*/
 
     const addProposals = () => {
 
@@ -90,10 +122,11 @@ function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
 
     const voterPourUneProposition = () => {
 
-        if (proposalSelected) {
+        //TODO comprendre ce param bug à 0
+        if (proposalSelected != '' || proposalSelected === 0) {
             console.log("Vote pour : " + proposalSelected);
             voteProposal.write({
-                args: proposalSelected
+                args: proposalSelected === 0 ? BigNumber.from(proposalSelected) : proposalSelected
             })
         } else {
             alert("Vous devez voter pour une proposition !")
@@ -133,8 +166,11 @@ function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
                     <Typography variant="h6" gutterBottom hidden={workflowStatus > 0}>
                         Veuillez attendre l'enregistrement des propositions.
                     </Typography>
-                    <Typography variant="h6" gutterBottom hidden={workflowStatus != 2}>
+                    <Typography variant="h6" gutterBottom hidden={workflowStatus !== 2}>
                         Veuillez attendre l'ouverture du vote.
+                    </Typography>
+                    <Typography variant="h6" gutterBottom hidden={workflowStatus !== 4}>
+                        Veuillez attendre le dépouillement
                     </Typography>
                 </Grid>
                 {workflowStatus === 1 && <>
@@ -157,9 +193,9 @@ function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
                         <Button variant="contained" onClick={addProposals}>Ajouter</Button>
                     </Grid>
                 </>}
-                {workflowStatus === 3 && proposalList.length > 0 && !voter.hasVoted && <>
+                {workflowStatus === 3 && proposalList.length > 0 && !voter?.hasVoted && <>
                     <Grid item xs={12} sm={6}>
-                        <FormControl sx={{m: 1, width: 300}}>
+                        <FormControl sx={{m: 1, width: 400}}>
                             <InputLabel id="proposalSelect">Sélectionner votre proposition préférée</InputLabel>
                             <Select
                                 labelId="proposalSelect"
@@ -171,7 +207,7 @@ function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
                                     <MenuItem
                                         key={proposal.id}
                                         value={proposal.id}>
-                                        {proposal.description}
+                                        {proposal.id + "-" + proposal.description}
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -181,16 +217,16 @@ function Voter({voter, workflowStatus, labelWorkflowStatus, winningId}) {
                         <Button variant="contained" onClick={voterPourUneProposition}>Voter</Button>
                     </Grid>
                 </>}
-                {voter.hasVoted && proposalList.length > 0 && <>
+                {voter?.hasVoted && proposalList.length > 0 && <>
                     <Grid item xs={12}>
                         <Typography variant="h5" gutterBottom>
                             Vous avez déjà voté pour la proposition : <Chip className={chipCustomClass.chipCustom}
-                                                                            label={proposalList.find(prop => prop.id === voter.votedProposalId.toNumber())?.description}
+                                                                            label={proposalList.find(prop => prop.id === voter?.votedProposalId.toNumber())?.description}
                                                                             variant="outlined"/>
 
                         </Typography>
                     </Grid></>}
-                <Grid item xs={12} hidden={workflowStatus != 5}>
+                <Grid item xs={12} hidden={workflowStatus !== 5}>
                     Le vote est clos et la proposition gagnante est la <Chip className={chipCustomClass.chipCustom}
                                                                              label={winningId + " - " + proposalList.find(prop => prop.id === winningId)?.description}
                                                                              variant="outlined"/>

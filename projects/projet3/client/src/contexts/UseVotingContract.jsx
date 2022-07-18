@@ -1,4 +1,4 @@
-import {useContract, useContractWrite, useProvider} from 'wagmi';
+import {useContract, useProvider} from 'wagmi';
 
 const {abi: VotingABI} = require('../contracts/Voting.json');
 
@@ -8,7 +8,7 @@ export function useVotingContract() {
     //const signer = useSigner();
 
     const config = {
-        addressOrName: '0x6BD7B7ace3f24BA33785113361DF0Fd1EA3F7dEA',
+        addressOrName: '0x0B54f39C7eB926faA2B8bc2d559BF1041F61C540',
         contractInterface: VotingABI,
     };
     const contractProvider = useContract({
@@ -21,12 +21,7 @@ export function useVotingContract() {
         signerOrProvider: provider.getSigner(),
     });
 
-    const addVoter = useContractWrite({
-        ...config,
-        functionName: 'addVoter',
-    });
 
-
-    return {contractConfig: config, addVoter, contractProvider, contractSigner};
+    return {contractConfig: config, contractProvider, contractSigner};
 
 }
