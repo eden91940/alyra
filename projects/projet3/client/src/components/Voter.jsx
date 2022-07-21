@@ -111,10 +111,10 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
         //TODO comprendre ce param bug à 0
         if (proposalSelected !== '' || proposalSelected === 0) {
             console.log("Vote pour : " + proposalSelected);
+            setVotePending(true)
             voteProposal.write({
                 args: proposalSelected === 0 ? BigNumber.from(proposalSelected) : proposalSelected
             })
-            setVotePending(true)
         } else {
             alert("Vous devez voter pour une proposition !")
         }
@@ -218,8 +218,7 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
                     </Grid></>}
                 <Grid item xs={12} hidden={workflowStatus !== 5}>
                     Le vote est clos et la proposition gagnante est la <Chip className={chipCustomClass.chipCustom} color="success"
-                                                                             label={winningId + " - " + proposalList.find(prop => prop.id === winningId)?.description}
-                                                                             variant="outlined"/>
+                                                                             label={winningId + " - " + proposalList.find(prop => prop.id === winningId)?.description}/>
                 </Grid>
             </Grid>
         </React.Fragment>

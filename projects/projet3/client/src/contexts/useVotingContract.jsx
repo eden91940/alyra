@@ -17,7 +17,7 @@ export function useVotingContract() {
 
 */
     const config = {
-        addressOrName: '0xFD4c25E880e0BB7a4Bb980F13f62DaCBd7e903D9',
+        addressOrName: '0xd3Ff69dAceeA740360Ce69b1fb515BD165C22F71',
         contractInterface: VotingABI,
     };
 
