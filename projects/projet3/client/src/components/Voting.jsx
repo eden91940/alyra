@@ -37,6 +37,7 @@ function Voting() {
     const [labelNextWorkflowStatus, setLabelNextWorkflowStatus] = useState(null)
     const [voterAddress, setVoterAddress] = useState('')
     const {address} = useAccount()
+
     const {contractConfig: config, contractProvider, contractSigner} = useVotingContract()
     const columns = ["Adresse"];
 
@@ -127,7 +128,7 @@ function Voting() {
             setUpWeb3();
 
         },
-        [address, contractProvider]
+        [address]
     );
 
     useEffect(
@@ -295,11 +296,11 @@ function Voting() {
                                         />
                                     </Grid>
                                     <Grid item xs={12} hidden={workflowStatus !== 5}>
-                                        Le vote est clos et la proposition gagnante est la <strong>{winningId}</strong>
+                                        Le vote est clos et la proposition gagnante est celle avec l'id <strong>{winningId}</strong>
                                     </Grid>
                                 </Grid>
                                 <hr/>
-                                {voter && voter.isRegistered &&
+                                {voter?.isRegistered &&
                                     <Voter voteur={voter} workflowStatus={workflowStatus} labelWorkflowStatus={labelWorkflowStatus} winningId={winningId}/>
                                 }
                             </React.Fragment>

@@ -25,10 +25,13 @@ Les instructions suivantes vous permettront d'installer le projet :
 
 Vous trouverez une vidéo de présentation du projet sur l'URL suivant [Vidéo de démo](https://www.loom.com/share/d9291f53d59a4092b1186269514a03c0)
 
+Vous trouverez aussi une vidéo courte complémentaire pour montrer la feature des resultats complet avec le fix du dernier bug sur l'URL
+suivant [Vidéo bonus](https://www.loom.com/share/573115b82fcc4f7c8f1f9d1f89bc3d8f)
+
 Il existe une exemple deployé sur Ropsten ici :
 ```0x2dDFae451d7a1058F227B007541Bb310e43e3d57```
 
-Vous avez la version en ligne pour le contrat ci-dessus via le site [Github Pages](https://eden91940.github.io/alyra/)
+Vous avez la version 0.1.0 en ligne pour le contrat ci-dessus via le site [Github Pages](https://eden91940.github.io/alyra/)
 lancé avec la cmd `npm run deploy`
 
 ### Specs

@@ -6,6 +6,7 @@ import {useVotingContract} from "../contexts/useVotingContract";
 import {useAccount, useContractEvent, useContractWrite} from "wagmi";
 import {useStyles} from "./Voting";
 import {BigNumber} from "ethers";
+import MUIDataTable from "mui-datatables";
 
 function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
 
@@ -19,6 +20,10 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
     const [proposalSelected, setProposalSelected] = useState('')
     const {contractConfig, contractProvider, contractSigner} = useVotingContract()
     const {address} = useAccount()
+    const columnsProposal = [{name: 'id', label: 'Id', width: 70},
+        {name: 'description', label: 'Description', width: 130},
+        {name: 'voteCount', label: 'Nombre de voix', width: 130}]
+
 
     const addProposal = useContractWrite({
         ...contractConfig,
@@ -54,8 +59,8 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
             // 👇️ push to end of state array
             contractSigner.getVoter(address).then((voter) => {
                 console.log("update voter")
-                setVotePending(false)
                 setVoter(voter);
+                setVotePending(false)
             }).catch(function (e) {
                 console.warn("Vous ne pouvez pas voter - ", e);
             })
@@ -74,7 +79,7 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
                     eventsProposalRegistered.map(async ({args}) => {
                         const id = args[0].toNumber();
                         const proposal = await contractSigner.getOneProposal(id)
-                        setProposalList(current => [...current, {id: id, description: proposal.description}]);
+                        setProposalList(current => [...current, {id: id, description: proposal.description, voteCount: proposal.voteCount.toNumber()}]);
                     })
 
                 } catch (error) {
@@ -85,6 +90,16 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
 
             setOpenDialogOk(false)
             getProposals();
+
+            // 👇️ push to end of state array
+            contractSigner.getVoter(address).then((voter) => {
+                console.log("update voter")
+                setVoter(voter);
+                setVotePending(false)
+            }).catch(function (e) {
+                console.warn("Vous ne pouvez pas voter - ", e);
+            })
+
 
         },
         [address]
@@ -206,6 +221,7 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
                     <Grid item xs={12} sm={12} hidden={!votePending}>
                         Votre vote va être pris en compte quelques secondes après confirmation...
                     </Grid>
+
                 </>}
                 {voter?.hasVoted && proposalList.length > 0 && <>
                     <Grid item xs={12}>
@@ -219,6 +235,17 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
                 <Grid item xs={12} hidden={workflowStatus !== 5}>
                     Le vote est clos et la proposition gagnante est la <Chip className={chipCustomClass.chipCustom} color="success"
                                                                              label={winningId + " - " + proposalList.find(prop => prop.id === winningId)?.description}/>
+                </Grid>
+                <Grid item xs={12} hidden={proposalList && workflowStatus !== 5}>
+                    <MUIDataTable
+                        title={"Liste des résultats"}
+                        data={proposalList}
+                        columns={columnsProposal}
+                        options={{
+                            selectableRows: "none", // <===== will turn off checkboxes in rows
+                            filter: false // <===== will turn off checkboxes in rows
+                        }}
+                    />
                 </Grid>
             </Grid>
         </React.Fragment>
