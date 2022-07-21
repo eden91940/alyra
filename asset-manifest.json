@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/alyra/static/css/main.559d69c2.chunk.css",
-    "main.js": "/alyra/static/js/main.c4c95437.chunk.js",
-    "main.js.map": "/alyra/static/js/main.c4c95437.chunk.js.map",
+    "main.js": "/alyra/static/js/main.ae4c5459.chunk.js",
+    "main.js.map": "/alyra/static/js/main.ae4c5459.chunk.js.map",
     "runtime-main.js": "/alyra/static/js/runtime-main.87632986.js",
     "runtime-main.js.map": "/alyra/static/js/runtime-main.87632986.js.map",
-    "static/js/2.85adda72.chunk.js": "/alyra/static/js/2.85adda72.chunk.js",
-    "static/js/2.85adda72.chunk.js.map": "/alyra/static/js/2.85adda72.chunk.js.map",
+    "static/js/2.b7115476.chunk.js": "/alyra/static/js/2.b7115476.chunk.js",
+    "static/js/2.b7115476.chunk.js.map": "/alyra/static/js/2.b7115476.chunk.js.map",
     "index.html": "/alyra/index.html",
     "static/css/main.559d69c2.chunk.css.map": "/alyra/static/css/main.559d69c2.chunk.css.map",
-    "static/js/2.85adda72.chunk.js.LICENSE.txt": "/alyra/static/js/2.85adda72.chunk.js.LICENSE.txt"
+    "static/js/2.b7115476.chunk.js.LICENSE.txt": "/alyra/static/js/2.b7115476.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.87632986.js",
-    "static/js/2.85adda72.chunk.js",
+    "static/js/2.b7115476.chunk.js",
     "static/css/main.559d69c2.chunk.css",
-    "static/js/main.c4c95437.chunk.js"
+    "static/js/main.ae4c5459.chunk.js"
   ]
 }
