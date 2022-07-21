@@ -2,7 +2,7 @@ import * as React from "react";
 import {useEffect, useState} from "react";
 import {Alert, Box, Button, Chip, Collapse, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextareaAutosize, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-import {useVotingContract} from "../contexts/UseVotingContract";
+import {useVotingContract} from "../contexts/useVotingContract";
 import {useAccount, useContractEvent, useContractWrite} from "wagmi";
 import {useStyles} from "./Voting";
 import {BigNumber} from "ethers";
@@ -10,11 +10,10 @@ import {BigNumber} from "ethers";
 function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
 
     const chipCustomClass = useStyles();
-    /*
-        const [voter, setVoter] = useState(voteur)
-    */
+
     const [proposal, setProposal] = useState('')
     const [voter, setVoter] = useState(voteur)
+    const [votePending, setVotePending] = useState(false)
     const [openDialogOk, setOpenDialogOk] = useState(false)
     const [proposalList, setProposalList] = useState([])
     const [proposalSelected, setProposalSelected] = useState('')
@@ -39,6 +38,7 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
         functionName: 'setVote',
         onError(error) {
             console.log("Error vote proposal", error);
+            setVotePending(false)
         },
         onSuccess(data) {
             setProposalSelected('')
@@ -54,6 +54,7 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
             // 👇️ push to end of state array
             contractSigner.getVoter(address).then((voter) => {
                 console.log("update voter")
+                setVotePending(false)
                 setVoter(voter);
             }).catch(function (e) {
                 console.warn("Vous ne pouvez pas voter - ", e);
@@ -89,21 +90,6 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
         [address]
     );
 
-    /*    useEffect(
-            () => {
-                if (proposalSelected === '') {
-                    console.log("Refesh data voter")
-                    contractSigner.getVoter(address).then((voter) => {
-                        setVoter(voter)
-                    }).catch(function (e) {
-                        setVoter(null)
-                        console.warn("Vous ne pouvez pas voter - ", e);
-                    })
-                }
-            },
-            [proposalSelected]
-        );*/
-
     const addProposals = () => {
 
         if (proposal) {
@@ -123,11 +109,12 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
     const voterPourUneProposition = () => {
 
         //TODO comprendre ce param bug à 0
-        if (proposalSelected != '' || proposalSelected === 0) {
+        if (proposalSelected !== '' || proposalSelected === 0) {
             console.log("Vote pour : " + proposalSelected);
             voteProposal.write({
                 args: proposalSelected === 0 ? BigNumber.from(proposalSelected) : proposalSelected
             })
+            setVotePending(true)
         } else {
             alert("Vous devez voter pour une proposition !")
         }
@@ -194,7 +181,7 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
                     </Grid>
                 </>}
                 {workflowStatus === 3 && proposalList.length > 0 && !voter?.hasVoted && <>
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12} sm={6} hidden={votePending}>
                         <FormControl sx={{m: 1, width: 400}}>
                             <InputLabel id="proposalSelect">Sélectionner votre proposition préférée</InputLabel>
                             <Select
@@ -213,8 +200,11 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12} sm={6} hidden={votePending}>
                         <Button variant="contained" onClick={voterPourUneProposition}>Voter</Button>
+                    </Grid>
+                    <Grid item xs={12} sm={12} hidden={!votePending}>
+                        Votre vote va être pris en compte quelques secondes après confirmation...
                     </Grid>
                 </>}
                 {voter?.hasVoted && proposalList.length > 0 && <>
@@ -227,7 +217,7 @@ function Voter({voteur, workflowStatus, labelWorkflowStatus, winningId}) {
                         </Typography>
                     </Grid></>}
                 <Grid item xs={12} hidden={workflowStatus !== 5}>
-                    Le vote est clos et la proposition gagnante est la <Chip className={chipCustomClass.chipCustom}
+                    Le vote est clos et la proposition gagnante est la <Chip className={chipCustomClass.chipCustom} color="success"
                                                                              label={winningId + " - " + proposalList.find(prop => prop.id === winningId)?.description}
                                                                              variant="outlined"/>
                 </Grid>

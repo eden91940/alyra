@@ -2,7 +2,7 @@ import {useAccount, useContractEvent, useContractWrite} from 'wagmi'
 import * as React from "react";
 import {useEffect, useState} from "react";
 import {Button, Chip, Grid, TextField, Typography} from "@mui/material";
-import {useVotingContract} from "../contexts/UseVotingContract";
+import {useVotingContract} from "../contexts/useVotingContract";
 import MUIDataTable from "mui-datatables";
 import Voter from "./Voter";
 import {makeStyles} from "@mui/styles";
@@ -35,7 +35,7 @@ function Voting() {
     const [workflowStatus, setWorkflowStatus] = useState(null)
     const [labelWorkflowStatus, setLabelWorkflowStatus] = useState(null)
     const [labelNextWorkflowStatus, setLabelNextWorkflowStatus] = useState(null)
-    const [voterAddress, setVoterAddress] = useState(null)
+    const [voterAddress, setVoterAddress] = useState('')
     const {address} = useAccount()
     const {contractConfig: config, contractProvider, contractSigner} = useVotingContract()
     const columns = ["Adresse"];
@@ -44,10 +44,11 @@ function Voting() {
         ...config,
         functionName: 'addVoter',
         onError(error) {
-            console.log("Error", error);
+            console.log("Error add voter", error);
         },
         onSuccess(data) {
-            console.log("Success", data);
+            setVoterAddress('')
+            console.log("Success add voter", data);
         }
     });
 
@@ -80,7 +81,6 @@ function Voting() {
         }
     })
 
-
     // Rendu initial du composant
     useEffect(
         // On veut recupérer les infos du contrat déployé au moment du montage du composant
@@ -94,13 +94,12 @@ function Voting() {
                     setIsOwner(ownerAddress === address)
 
                     //on vérifie si on est un électeur
-                    if (address) {
-                        contractSigner.getVoter(address).then((voter) => {
-                            setVoter(voter)
-                        }).catch(function (e) {
-                            setVoter(null)
-                            console.warn("Vous ne pouvez pas voter - ", e);
-                        });
+                    try {
+                        const voter = await contractSigner.getVoter(address)
+                        setVoter(voter)
+                    } catch (e) {
+                        setVoter(null)
+                        console.warn("Vous ne pouvez pas voter - ", e);
                     }
 
                     //on récupère le status du workflow
@@ -148,6 +147,8 @@ function Voting() {
             addVoter.write({
                 args: voterAddress
             });
+        } else {
+            alert("Veuillez saisir une adresse")
         }
 
     };
@@ -272,6 +273,7 @@ function Voting() {
                                                 fullWidth
                                                 autoComplete="shipping address"
                                                 variant="standard"
+                                                value={voterAddress}
                                                 onChange={(event) => {
                                                     setVoterAddress(event.target.value)
                                                 }}

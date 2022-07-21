@@ -5,13 +5,22 @@ const {abi: VotingABI} = require('../contracts/Voting.json');
 export function useVotingContract() {
 
     const provider = useProvider();
-    //const signer = useSigner();
+    /*const {signer} = useSigner({
+    onSuccess(data) {
+        console.log('Success', data)
+    },
+})
+    const [networkSelected, setNetworkSelected] = useState()
+    provider.getNetwork().then((network) => {
+        setNetworkSelected(network)
+    })
 
+*/
     const config = {
-        addressOrName: '0x9C53F90f56243871f95a4c9eC8a2bEE530FF4424',
+        addressOrName: '0xFD4c25E880e0BB7a4Bb980F13f62DaCBd7e903D9',
         contractInterface: VotingABI,
     };
-    
+
     const contractProvider = useContract({
         ...config,
         signerOrProvider: provider,
