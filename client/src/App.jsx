@@ -1,4 +1,4 @@
-import Intro from "./components/Intro/";
+import Intro from "./components/Intro";
 import Profile from "./components/Profile";
 import Footer from "./components/Footer";
 import "./App.css";
