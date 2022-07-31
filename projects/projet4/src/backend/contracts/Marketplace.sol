@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.15;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
@@ -12,7 +12,7 @@ contract Marketplace is ReentrancyGuard {
     // Variables
     address payable public immutable feeAccount; // the account that receives fees
     uint public immutable feePercent; // the fee percentage on sales 
-    uint public itemCount; 
+    uint public itemCount;
 
     struct Item {
         uint itemId;
@@ -55,7 +55,7 @@ contract Marketplace is ReentrancyGuard {
         // transfer nft
         _nft.transferFrom(msg.sender, address(this), _tokenId);
         // add new item to items mapping
-        items[itemCount] = Item (
+        items[itemCount] = Item(
             itemCount,
             _nft,
             _tokenId,
@@ -81,6 +81,8 @@ contract Marketplace is ReentrancyGuard {
         require(!item.sold, "item already sold");
         // pay seller and feeAccount
         item.seller.transfer(item.price);
+//        console.log("feeAccount from %s", feeAccount);
+
         feeAccount.transfer(_totalPrice - item.price);
         // update item to sold
         item.sold = true;
@@ -96,7 +98,8 @@ contract Marketplace is ReentrancyGuard {
             msg.sender
         );
     }
-    function getTotalPrice(uint _itemId) view public returns(uint){
-        return((items[_itemId].price*(100 + feePercent))/100);
+
+    function getTotalPrice(uint _itemId) view public returns (uint){
+        return ((items[_itemId].price * (100 + feePercent)) / 100);
     }
 }
