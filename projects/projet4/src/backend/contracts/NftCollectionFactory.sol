@@ -3,6 +3,7 @@ pragma solidity 0.8.15;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./NFT.sol";
+import "./VrfCategory.sol";
 
 contract NftCollectionFactory is Ownable {
 
@@ -12,7 +13,7 @@ contract NftCollectionFactory is Ownable {
 
     event CollectionCreated(string name, string symbol, string description, address collectionAddress, uint timestamp);
 
-    function createCollection(string memory _name, string memory _symbol, string memory _description) external returns (address collectionAddress) {
+    function createCollection(string memory _name, string memory _symbol, string memory _description, VrfCategory _vrf) external returns (address collectionAddress) {
         // Import the bytecode of the contract to deploy
         bytes memory collectionBytecode = type(NFT).creationCode;
         // Make a random salt based on the artist name
@@ -27,7 +28,7 @@ contract NftCollectionFactory is Ownable {
         }
 
         // Initialize the collection contract
-        NFT(collectionAddress).init(msg.sender, _name, _symbol, _description);
+        NFT(collectionAddress).init(msg.sender, _name, _symbol, _description, _vrf);
 
         // Save the owner of this collection
         userCollections[msg.sender].push(collectionAddress);

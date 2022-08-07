@@ -8,7 +8,7 @@ const Navigation = ({ web3Handler, account }) => {
     return (
         <Navbar expand="lg" bg="secondary" variant="dark">
             <Container>
-                <Navbar.Brand href="http://www.dappuniversity.com/bootcamp">
+                <Navbar.Brand href="https://github.com/eden91940/alyra/tree/main/projects/projet4">
                     <img src={alyra} width="40" height="40" className="" alt="" />
                     &nbsp; Alyra NFT Marketplace Ropsten
                 </Navbar.Brand>
@@ -17,7 +17,7 @@ const Navigation = ({ web3Handler, account }) => {
                     <Nav className="me-auto">
                         <Nav.Link as={Link} to="/">Accueil</Nav.Link>
                         <Nav.Link as={Link} to="/create">Créer</Nav.Link>
-                        <Nav.Link as={Link} to="/my-listed-items">Mes NFTs</Nav.Link>
+                        <Nav.Link as={Link} to="/my-listed-items">NFTs échangés</Nav.Link>
                         <Nav.Link as={Link} to="/my-purchases">Mes Achats</Nav.Link>
                     </Nav>
                     <Nav>
@@ -33,7 +33,7 @@ const Navigation = ({ web3Handler, account }) => {
 
                             </Nav.Link>
                         ) : (
-                            <Button onClick={web3Handler} variant="outline-light">Connect Wallet</Button>
+                            <Button onClick={web3Handler} variant="outline-light">Connecter son Wallet</Button>
                         )}
                     </Nav>
                 </Navbar.Collapse>

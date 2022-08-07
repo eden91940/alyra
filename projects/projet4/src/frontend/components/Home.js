@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { ethers } from "ethers"
 import { Row, Col, Card, Button } from 'react-bootstrap'
 
-const Home = ({ marketplace, nft }) => {
+const Home = ({ marketplace, nft, vrf }) => {
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState([])
+
   const loadMarketplaceItems = async () => {
     // Load all unsold items
     const itemCount = await marketplace.itemCount()
@@ -12,6 +13,8 @@ const Home = ({ marketplace, nft }) => {
     for (let i = 1; i <= itemCount; i++) {
       const item = await marketplace.items(i)
       if (!item.sold) {
+        // get category NFT from contract VRF
+        const category = await vrf.category(item.tokenId)
         // get uri url from nft contract
         const uri = await nft.tokenURI(item.tokenId)
         // use uri to fetch the nft metadata stored on ipfs 
@@ -26,6 +29,7 @@ const Home = ({ marketplace, nft }) => {
           seller: item.seller,
           name: metadata.name,
           description: metadata.description,
+          category: category,
           image: metadata.image
         })
       }
@@ -42,9 +46,10 @@ const Home = ({ marketplace, nft }) => {
   useEffect(() => {
     loadMarketplaceItems()
   }, [])
+
   if (loading) return (
     <main style={{ padding: "1rem 0" }}>
-      <h2>Loading...</h2>
+      <h2>Chargement...</h2>
     </main>
   )
   return (
@@ -60,6 +65,9 @@ const Home = ({ marketplace, nft }) => {
                     <Card.Title>{item.name}</Card.Title>
                     <Card.Text>
                       {item.description}
+                    </Card.Text>
+                    <Card.Text>
+                      {item.category}
                     </Card.Text>
                   </Card.Body>
                   <Card.Footer>

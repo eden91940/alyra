@@ -12,6 +12,8 @@ import MarketplaceAbi from '../contractsData/Marketplace.json'
 import MarketplaceAddress from '../contractsData/Marketplace-address.json'
 import NFTAbi from '../contractsData/NFT.json'
 import NFTAddress from '../contractsData/NFT-address.json'
+import VRFAbi from '../contractsData/VrfCategory.json'
+import VRFAddress from '../contractsData/VrfCategory-address.json'
 import { useState } from 'react'
 import { ethers } from "ethers"
 import { Spinner } from 'react-bootstrap'
@@ -23,6 +25,7 @@ function App() {
   const [account, setAccount] = useState(null)
   const [nft, setNFT] = useState({})
   const [marketplace, setMarketplace] = useState({})
+  const [vrf, setVrf] = useState({})
   // MetaMask Login/Connect
   const web3Handler = async () => {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -46,8 +49,11 @@ function App() {
     // Get deployed copies of contracts
     const marketplace = new ethers.Contract(MarketplaceAddress.address, MarketplaceAbi.abi, signer)
     setMarketplace(marketplace)
+    const vrf = new ethers.Contract(VRFAddress.address, VRFAbi.abi, signer)
+    setVrf(vrf)
     const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer)
     setNFT(nft)
+
     setLoading(false)
   }
 
@@ -61,15 +67,15 @@ function App() {
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
               <Spinner animation="border" style={{ display: 'flex' }} />
-              <p className='mx-3 my-0'>Awaiting Metamask Connection...</p>
+              <p className='mx-3 my-0'>En attente de connection avec Metamask...</p>
             </div>
           ) : (
             <Routes>
               <Route path="/" element={
-                <Home marketplace={marketplace} nft={nft} />
+                <Home marketplace={marketplace} nft={nft} vrf={vrf} />
               } />
               <Route path="/create" element={
-                <Create marketplace={marketplace} nft={nft} />
+                <Create marketplace={marketplace} nft={nft} vrf={vrf} />
               } />
               <Route path="/my-listed-items" element={
                 <MyListedItems marketplace={marketplace} nft={nft} account={account} />

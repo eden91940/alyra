@@ -42,11 +42,14 @@ $ npx hardhat node
 ### 7. Launch Frontend
 `$ npm run start`
 
+### 8. Vidéo démo front local + testNet Rinkeby pour chainLink
+
+- Vidéo 1 : https://www.loom.com/share/4e29a34c37854542a4cac29a544724e9
+- Vidéo 2 : https://www.loom.com/share/b8eea8d175544ed69f8bab1780093cc7
+
 Contributors
 ----
 - Clement MARTINO
-- Paul Bellamy
-- Abdelkader Kasmi
 
 License
 ----
